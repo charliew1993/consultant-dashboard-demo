@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultant Performance Dashboard | Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #212d45;
+            --accent-orange: #ff6b35;
+            --accent-orange-glow: rgba(255, 107, 53, 0.3);
+            --accent-green: #10b981;
+            --accent-green-glow: rgba(16, 185, 129, 0.3);
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --gradient-orange: linear-gradient(135deg, #ff6b35 0%, #f7931a 100%);
+            --gradient-green: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            --gradient-red: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            --gradient-purple: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Demo Banner */
+        .demo-banner {
+            background: linear-gradient(90deg, var(--accent-blue) 0%, #8b5cf6 100%);
+            padding: 0.75rem 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .header-left h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            background: var(--gradient-orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-left .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .period-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .period-badge .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        /* Nudge Banner */
+        .nudge-banner {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 1rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nudge-icon {
+            font-size: 1.5rem;
+        }
+
+        .nudge-content {
+            flex: 1;
+        }
+
+        .nudge-title {
+            font-weight: 600;
+            color: var(--accent-amber);
+            margin-bottom: 0.25rem;
+        }
+
+        .nudge-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .nudge-action {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--accent-amber);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nudge-action:hover {
+            background: rgba(245, 158, 11, 0.3);
+        }
+
+        /* Profile Section */
+        .profile-section {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 2rem;
+            align-items: center;
+            background: var(--bg-card);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--gradient-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .profile-info h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-info .role {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .profile-info .subspecialty {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding: 0.35rem 0.75rem;
+            background: rgba(59, 130, 246, 0.15);
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            color: var(--accent-blue);
+            font-weight: 500;
+        }
+
+        .streak-container {
+            text-align: center;
+        }
+
+        .streak-number {
+            font-size: 3rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--gradient-green);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .streak-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.25rem;
+        }
+
+        .streak-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Quick Stats Row */
+        .quick-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .quick-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .quick-stat-value {
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .quick-stat-value.green { color: var(--accent-green); }
+        .quick-stat-value.amber { color: var(--accent-amber); }
+
+        /* Main Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-subtle);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card.highlight-green {
+            border-color: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.1);
+        }
+
+        .stat-card.highlight-amber {
+            border-color: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.1);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value.green { color: var(--accent-green); }
+        .stat-value.amber { color: var(--accent-amber); }
+        .stat-value.red { color: var(--accent-red); }
+
+        .stat-detail {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-trend {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            display: inline-block;
+        }
+
+        .stat-trend.up {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .stat-trend.down {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+
+        .stat-trend.flat {
+            background: rgba(148, 163, 184, 0.15);
+            color: var(--text-secondary);
+        }
+
+        .stat-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--bg-secondary);
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            transition: width 1s ease-out;
+        }
+
+        .stat-bar-fill.green { background: var(--gradient-green); }
+        .stat-bar-fill.amber { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+        /* Progress Rings Section */
+        .rings-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .ring-card {
+            background: var(--bg-card);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-subtle);
+            text-align: center;
+        }
+
+        .ring-card.warning {
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .ring-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+        }
+
+        .ring-svg {
+            transform: rotate(-90deg);
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: var(--bg-secondary);
+            stroke-width: 8;
+        }
+
+        .ring-progress {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.5s ease-out;
+        }
+
+        .ring-progress.green { stroke: url(#greenGradient); }
+        .ring-progress.amber { stroke: url(#amberGradient); }
+        .ring-progress.blue { stroke: url(#blueGradient); }
+
+        .ring-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .ring-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .ring-unit {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .ring-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .ring-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .ring-note {
+            font-size: 0.7rem;
+            color: var(--accent-amber);
+            margin-top: 0.5rem;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.planned { background: var(--accent-blue); opacity: 0.4; }
+        .legend-dot.actual { background: var(--accent-green); }
+        .legend-dot.missed { background: var(--accent-amber); }
+
+        .chart-container {
+            height: 220px;
+        }
+
+        .chart-footer {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .chart-footer-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-footer-value {
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Activity Feed */
+        .activity-card {
+            background: var(--bg-card);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .activity-icon.clinic { background: rgba(59, 130, 246, 0.2); }
+        .activity-icon.procedure { background: rgba(16, 185, 129, 0.2); }
+        .activity-icon.milestone { background: rgba(255, 107, 53, 0.2); }
+        .activity-icon.alert { background: rgba(245, 158, 11, 0.2); }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Procedure Breakdown */
+        .procedures-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .procedure-card {
+            background: var(--bg-card);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .procedure-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .procedure-title {
+            font-weight: 600;
+        }
+
+        .procedure-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .procedure-badge.on-track { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .procedure-badge.attention { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
+
+        .procedure-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .procedure-stat:last-child {
+            border-bottom: none;
+        }
+
+        .procedure-name {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .procedure-values {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .procedure-current {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .procedure-target {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .procedure-check {
+            color: var(--accent-green);
+        }
+
+        .procedure-warning {
+            color: var(--accent-amber);
+            font-size: 0.8rem;
+        }
+
+        /* Comparison Section */
+        .comparison-section {
+            background: var(--bg-card);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 2rem;
+        }
+
+        .comparison-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .comparison-title {
+            font-weight: 600;
+        }
+
+        .comparison-toggle {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .comparison-btn {
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .comparison-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .comparison-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 0.75rem;
+        }
+
+        .comparison-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .comparison-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 0.25rem;
+        }
+
+        .comparison-you {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            display: inline-block;
+        }
+
+        .comparison-you.above {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .comparison-you.below {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+        }
+
+        .comparison-you.match {
+            background: rgba(148, 163, 184, 0.15);
+            color: var(--text-secondary);
+        }
+
+        /* Heatmap Calendar */
+        .heatmap-section {
+            background: var(--bg-card);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 2rem;
+        }
+
+        .heatmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .heatmap-title {
+            font-weight: 600;
+        }
+
+        .heatmap-stats {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .heatmap-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .heatmap-stat-value {
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(31, 1fr);
+            gap: 4px;
+        }
+
+        .heatmap-day {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .heatmap-day:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .heatmap-day.level-1 { background: rgba(16, 185, 129, 0.2); }
+        .heatmap-day.level-2 { background: rgba(16, 185, 129, 0.4); }
+        .heatmap-day.level-3 { background: rgba(16, 185, 129, 0.6); }
+        .heatmap-day.level-4 { background: var(--accent-green); }
+        .heatmap-day.leave { background: rgba(100, 116, 139, 0.3); }
+        .heatmap-day.cancelled { background: rgba(245, 158, 11, 0.4); }
+        .heatmap-day.weekend { background: transparent; border: 1px dashed var(--border-subtle); }
+
+        .heatmap-legend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .heatmap-legend-item {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+
+        /* Insights Section */
+        .insights-section {
+            background: var(--bg-card);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 2rem;
+        }
+
+        .insights-title {
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .insight-item {
+            background: var(--bg-secondary);
+            border-radius: 1rem;
+            padding: 1.25rem;
+        }
+
+        .insight-item.positive {
+            border-left: 3px solid var(--accent-green);
+        }
+
+        .insight-item.warning {
+            border-left: 3px solid var(--accent-amber);
+        }
+
+        .insight-item.info {
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .insight-item.action {
+            border-left: 3px solid var(--accent-purple);
+        }
+
+        .insight-icon {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .insight-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .insight-highlight {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .insight-cta {
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--accent-blue);
+            font-weight: 500;
+        }
+
+        /* Leave Analysis */
+        .leave-section {
+            background: var(--bg-card);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 2rem;
+        }
+
+        .leave-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .leave-title {
+            font-weight: 600;
+        }
+
+        .leave-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .leave-item {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            text-align: center;
+        }
+
+        .leave-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 0.25rem;
+        }
+
+        .leave-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .leave-bar {
+            height: 6px;
+            background: var(--bg-primary);
+            border-radius: 3px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .leave-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        /* Footer */
+        .report-footer {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .footer-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .footer-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .footer-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .rings-section { grid-template-columns: repeat(2, 1fr); }
+            .charts-section { grid-template-columns: 1fr; }
+            .procedures-section { grid-template-columns: 1fr; }
+            .insight-grid { grid-template-columns: 1fr; }
+            .comparison-grid { grid-template-columns: repeat(2, 1fr); }
+            .leave-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .profile-section { grid-template-columns: 1fr; text-align: center; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .rings-section { grid-template-columns: 1fr; }
+            .heatmap-grid { grid-template-columns: repeat(7, 1fr); }
+            .header { flex-direction: column; gap: 1rem; }
+            .quick-stats { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <!-- SVG Gradients -->
+    <svg width="0" height="0">
+        <defs>
+            <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#10b981" />
+                <stop offset="100%" style="stop-color:#34d399" />
+            </linearGradient>
+            <linearGradient id="amberGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#f59e0b" />
+                <stop offset="100%" style="stop-color:#fbbf24" />
+            </linearGradient>
+            <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#3b82f6" />
+                <stop offset="100%" style="stop-color:#60a5fa" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- Demo Banner -->
+    <div class="demo-banner">
+        🎨 <strong>Interactive Demo</strong> — Concept design with illustrative data. What could NHS consultant performance reporting look like?
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header animate-in">
+            <div class="header-left">
+                <h1>Performance Dashboard</h1>
+                <p class="subtitle">Cardiovascular Directorate | Guy's & St Thomas'</p>
+            </div>
+            <div class="header-right">
+                <div class="period-badge">
+                    <span class="dot"></span>
+                    December 2025 | Month 9 of FY25/26
+                </div>
+            </div>
+        </header>
+
+        <!-- Nudge Banner -->
+        <div class="nudge-banner animate-in">
+            <div class="nudge-icon">💡</div>
+            <div class="nudge-content">
+                <div class="nudge-title">3 clinics behind YTD target</div>
+                <div class="nudge-text">You're at 91% of planned clinic delivery. Adding 1 extra clinic in Jan-Mar would get you back on track.</div>
+            </div>
+            <button class="nudge-action">View Options →</button>
+        </div>
+
+        <!-- Profile Section -->
+        <section class="profile-section animate-in delay-1">
+            <div class="avatar">EC</div>
+            <div class="profile-info">
+                <h2>Dr Example Consultant</h2>
+                <p class="role">Consultant Cardiologist & Electrophysiologist</p>
+                <span class="subspecialty">⚡ Electrophysiology</span>
+                <div class="quick-stats">
+                    <div class="quick-stat">
+                        <span>Job Plan:</span>
+                        <span class="quick-stat-value">10 PA</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span>DCC/SPA:</span>
+                        <span class="quick-stat-value">7.5 / 2.5</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span>Annual Clinics Target:</span>
+                        <span class="quick-stat-value">68</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span>Annual Lists Target:</span>
+                        <span class="quick-stat-value">64</span>
+                    </div>
+                </div>
+            </div>
+            <div class="streak-container">
+                <div class="streak-icon">🔥</div>
+                <div class="streak-number">5</div>
+                <div class="streak-label">Month Green Streak</div>
+            </div>
+        </section>
+
+        <!-- Main Stats Grid -->
+        <section class="stats-grid">
+            <div class="stat-card highlight-amber animate-in delay-1">
+                <div class="stat-label">Clinics YTD</div>
+                <div class="stat-value amber">54</div>
+                <div class="stat-detail">of 57 planned (91%)</div>
+                <span class="stat-trend down">↓ 3 behind</span>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill amber" style="width: 91%"></div>
+                </div>
+            </div>
+            <div class="stat-card highlight-green animate-in delay-2">
+                <div class="stat-label">Procedure Lists YTD</div>
+                <div class="stat-value green">49</div>
+                <div class="stat-detail">of 48 planned (102%)</div>
+                <span class="stat-trend up">↑ 1 ahead</span>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill green" style="width: 100%"></div>
+                </div>
+            </div>
+            <div class="stat-card highlight-green animate-in delay-3">
+                <div class="stat-label">Clinic Utilisation</div>
+                <div class="stat-value green">93%</div>
+                <div class="stat-detail">Target: ≥90%</div>
+                <span class="stat-trend flat">→ Stable</span>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill green" style="width: 93%"></div>
+                </div>
+            </div>
+            <div class="stat-card highlight-amber animate-in delay-4">
+                <div class="stat-label">DNA Rate</div>
+                <div class="stat-value amber">8.1%</div>
+                <div class="stat-detail">Target: <7%</div>
+                <span class="stat-trend down">↓ was 9.2%</span>
+                <div class="stat-bar">
+                    <div class="stat-bar-fill amber" style="width: 81%"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Rings -->
+        <section class="rings-section">
+            <div class="ring-card warning animate-in delay-1">
+                <div class="ring-container">
+                    <svg class="ring-svg" width="120" height="120" viewBox="0 0 120 120">
+                        <circle class="ring-bg" cx="60" cy="60" r="52"/>
+                        <circle class="ring-progress amber" cx="60" cy="60" r="52" 
+                            stroke-dasharray="327" stroke-dashoffset="72"/>
+                    </svg>
+                    <div class="ring-center">
+                        <div class="ring-value" style="color: var(--accent-amber)">78%</div>
+                        <div class="ring-unit">complete</div>
+                    </div>
+                </div>
+                <div class="ring-title">Annual Clinic Target</div>
+                <div class="ring-subtitle">54 of 68 clinics</div>
+                <div class="ring-note">Need 14 in 3 months (avg 4.7/mo)</div>
+            </div>
+            <div class="ring-card animate-in delay-2">
+                <div class="ring-container">
+                    <svg class="ring-svg" width="120" height="120" viewBox="0 0 120 120">
+                        <circle class="ring-bg" cx="60" cy="60" r="52"/>
+                        <circle class="ring-progress green" cx="60" cy="60" r="52" 
+                            stroke-dasharray="327" stroke-dashoffset="72"/>
+                    </svg>
+                    <div class="ring-center">
+                        <div class="ring-value" style="color: var(--accent-green)">77%</div>
+                        <div class="ring-unit">complete</div>
+                    </div>
+                </div>
+                <div class="ring-title">Annual List Target</div>
+                <div class="ring-subtitle">49 of 64 lists</div>
+            </div>
+            <div class="ring-card animate-in delay-3">
+                <div class="ring-container">
+                    <svg class="ring-svg" width="120" height="120" viewBox="0 0 120 120">
+                        <circle class="ring-bg" cx="60" cy="60" r="52"/>
+                        <circle class="ring-progress green" cx="60" cy="60" r="52" 
+                            stroke-dasharray="327" stroke-dashoffset="49"/>
+                    </svg>
+                    <div class="ring-center">
+                        <div class="ring-value" style="color: var(--accent-green)">85%</div>
+                        <div class="ring-unit">attended</div>
+                    </div>
+                </div>
+                <div class="ring-title">M&M / Governance</div>
+                <div class="ring-subtitle">11 of 13 meetings</div>
+            </div>
+            <div class="ring-card animate-in delay-4">
+                <div class="ring-container">
+                    <svg class="ring-svg" width="120" height="120" viewBox="0 0 120 120">
+                        <circle class="ring-bg" cx="60" cy="60" r="52"/>
+                        <circle class="ring-progress blue" cx="60" cy="60" r="52" 
+                            stroke-dasharray="327" stroke-dashoffset="82"/>
+                    </svg>
+                    <div class="ring-center">
+                        <div class="ring-value" style="color: var(--accent-blue)">75%</div>
+                        <div class="ring-unit">used</div>
+                    </div>
+                </div>
+                <div class="ring-title">Study Leave</div>
+                <div class="ring-subtitle">7.5 of 10 days</div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-section">
+            <div class="chart-card animate-in delay-2">
+                <div class="chart-header">
+                    <h3 class="chart-title">Monthly Clinic Delivery</h3>
+                    <div class="chart-legend">
+                        <span class="legend-item"><span class="legend-dot planned"></span> Planned</span>
+                        <span class="legend-item"><span class="legend-dot actual"></span> Delivered</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="activityChart"></canvas>
+                </div>
+                <div class="chart-footer">
+                    <div class="chart-footer-stat">
+                        <span>Avg delivered:</span>
+                        <span class="chart-footer-value" style="color: var(--accent-green)">6.0</span>
+                    </div>
+                    <div class="chart-footer-stat">
+                        <span>Avg planned:</span>
+                        <span class="chart-footer-value">6.3</span>
+                    </div>
+                    <div class="chart-footer-stat">
+                        <span>Best month:</span>
+                        <span class="chart-footer-value" style="color: var(--accent-green)">8 (Oct)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="activity-card animate-in delay-3">
+                <h3 class="activity-title">📋 Recent Activity</h3>
+                <ul class="activity-list">
+                    <li class="activity-item">
+                        <div class="activity-icon procedure">⚡</div>
+                        <div class="activity-content">
+                            <div class="activity-text"><strong>3 AF ablations</strong> completed</div>
+                            <div class="activity-time">Today, EP Lab 1</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon milestone">🏆</div>
+                        <div class="activity-content">
+                            <div class="activity-text"><strong>75th ablation</strong> of the year!</div>
+                            <div class="activity-time">Dec 18</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon alert">📅</div>
+                        <div class="activity-content">
+                            <div class="activity-text">Clinic <strong>rescheduled</strong> from Dec 16</div>
+                            <div class="activity-time">Moved to Jan 6</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon clinic">🩺</div>
+                        <div class="activity-content">
+                            <div class="activity-text"><strong>Arrhythmia clinic</strong> - 11 patients</div>
+                            <div class="activity-time">Dec 15</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon procedure">💫</div>
+                        <div class="activity-content">
+                            <div class="activity-text"><strong>VT ablation</strong> - complex case</div>
+                            <div class="activity-time">Dec 12, EP Lab 2</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Comparison Section -->
+        <section class="comparison-section animate-in delay-3">
+            <div class="comparison-header">
+                <h3 class="comparison-title">📊 How You Compare</h3>
+                <div class="comparison-toggle">
+                    <button class="comparison-btn active">vs Subspecialty</button>
+                    <button class="comparison-btn">vs Directorate</button>
+                </div>
+            </div>
+            <div class="comparison-grid">
+                <div class="comparison-item">
+                    <div class="comparison-label">Clinic Delivery %</div>
+                    <div class="comparison-value">94%</div>
+                    <span class="comparison-you below">You: 91%</span>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-label">DNA Rate</div>
+                    <div class="comparison-value">7.8%</div>
+                    <span class="comparison-you below">You: 8.1%</span>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-label">Utilisation</div>
+                    <div class="comparison-value">91%</div>
+                    <span class="comparison-you above">You: 93%</span>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-label">Ablations YTD</div>
+                    <div class="comparison-value">68</div>
+                    <span class="comparison-you above">You: 75</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Procedure Breakdown -->
+        <section class="procedures-section">
+            <div class="procedure-card animate-in delay-2">
+                <div class="procedure-header">
+                    <h3 class="procedure-title">⚡ Ablation Procedures</h3>
+                    <span class="procedure-badge on-track">Excellent</span>
+                </div>
+                <div class="procedure-stat">
+                    <span class="procedure-name">AF ablation (PVI)</span>
+                    <div class="procedure-values">
+                        <span class="procedure-current" style="color: var(--accent-green)">38</span>
+                        <span class="procedure-target">YTD</span>
+                    </div>
+                </div>
+                <div class="procedure-stat">
+                    <span class="procedure-name">SVT ablation</span>
+                    <div class="procedure-values">
+                        <span class="procedure-current" style="color: var(--accent-green)">24</span>
+                        <span class="procedure-target">YTD</span>
+                    </div>
+                </div>
+                <div class="procedure-stat">
+                    <span class="procedure-name">VT ablation</span>
+                    <div class="procedure-values">
+                        <span class="procedure-current" style="color: var(--accent-green)">13</span>
+                        <span class="procedure-target">YTD</span>
+                    </div>
+                </div>
+                <div class="procedure-stat">
+                    <span class="procedure-name">DC Cardioversion</span>
+                    <div class="procedure-values">
+                        <span class="procedure-current">48</span>
+                        <span class="procedure-target">YTD</span>
+                    </div>
+                </div>
+                <div class="procedure-stat" style="background: rgba(16, 185, 129, 0.1); margin: 0.5rem -1.5rem -1.5rem; padding: 1rem 1.5rem; border-radius: 0 0 1rem 1rem;">
+                    <span class="procedure-name" style="font-weight: 600; color: var(--text-primary);">Total Ablations</span>
+                    <div class="procedure-values">
+                        <span class="procedure-current" style="color: var(--accent-green); font-size: 1.25rem;">75</span>
+                        <span class="procedure-target">Top quartile 🏆</span>
+                    </div>
+                </div>
+            </div>
+            <div class="procedure-card animate-in delay-3">
+                <div class="procedure-header">
+                    <h3 class="procedure-title">🔋 Device Implantation</h3>
+                    <span class="procedure-badge attention">1 to go</span>
+                </div>
+                <div class="procedure-stat">
+                    <span class="procedure-name">Pacemaker (BHRS min: 35)</span>
+                    <div class="procedure-values">
+                        <span class="procedure-current" style="color: var(--accent-green)">38</span>
+                        <span class="procedure-check">✓</span>
+                    </div>
+                </div>
+                <div class="procedure-stat">
+                    <span class="procedure-name">ICD (BHRS min: 30 complex)</span>
+                    <div class="procedure-values">
+                        <span class="procedure-current" style="color: var(--accent-amber)">29</span>
+                        <span class="procedure-warning">1 more needed</span>
+                    </div>
+                </div>
+                <div class="procedure-stat">
+                    <span class="procedure-name">CRT-P</span>
+                    <div class="procedure-values">
+                        <span class="procedure-current">14</span>
+                        <span class="procedure-target">YTD</span>
+                    </div>
+                </div>
+                <div class="procedure-stat">
+                    <span class="procedure-name">CRT-D</span>
+                    <div class="procedure-values">
+                        <span class="procedure-current">16</span>
+                        <span class="procedure-target">YTD</span>
+                    </div>
+                </div>
+                <div class="procedure-stat" style="background: rgba(245, 158, 11, 0.1); margin: 0.5rem -1.5rem -1.5rem; padding: 1rem 1.5rem; border-radius: 0 0 1rem 1rem;">
+                    <span class="procedure-name" style="font-weight: 600; color: var(--text-primary);">Complex Devices</span>
+                    <div class="procedure-values">
+                        <span class="procedure-current" style="color: var(--accent-amber); font-size: 1.25rem;">29/30</span>
+                        <span class="procedure-target">BHRS min</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Leave Analysis -->
+        <section class="leave-section animate-in delay-3">
+            <div class="leave-header">
+                <h3 class="leave-title">📅 Leave & Absence Analysis</h3>
+            </div>
+            <div class="leave-grid">
+                <div class="leave-item">
+                    <div class="leave-value" style="color: var(--accent-blue)">22</div>
+                    <div class="leave-label">Annual Leave Days Used</div>
+                    <div class="leave-bar">
+                        <div class="leave-bar-fill" style="width: 73%; background: var(--gradient-blue);"></div>
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">of 30 days</div>
+                </div>
+                <div class="leave-item">
+                    <div class="leave-value" style="color: var(--accent-purple)">7.5</div>
+                    <div class="leave-label">Study Leave Days Used</div>
+                    <div class="leave-bar">
+                        <div class="leave-bar-fill" style="width: 75%; background: var(--gradient-purple);"></div>
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">of 10 days</div>
+                </div>
+                <div class="leave-item">
+                    <div class="leave-value" style="color: var(--accent-green)">2</div>
+                    <div class="leave-label">Clinics Rescheduled</div>
+                    <div style="font-size: 0.7rem; color: var(--accent-green); margin-top: 0.5rem;">✓ All recovered</div>
+                </div>
+                <div class="leave-item">
+                    <div class="leave-value" style="color: var(--accent-amber)">3</div>
+                    <div class="leave-label">Clinics Not Recovered</div>
+                    <div style="font-size: 0.7rem; color: var(--accent-amber); margin-top: 0.5rem;">Contributing to YTD gap</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Heatmap Calendar -->
+        <section class="heatmap-section animate-in delay-3">
+            <div class="heatmap-header">
+                <h3 class="heatmap-title">📆 December Activity Heatmap</h3>
+                <div class="heatmap-stats">
+                    <div class="heatmap-stat">
+                        <span>Working days:</span>
+                        <span class="heatmap-stat-value">18</span>
+                    </div>
+                    <div class="heatmap-stat">
+                        <span>Clinical days:</span>
+                        <span class="heatmap-stat-value" style="color: var(--accent-green)">14</span>
+                    </div>
+                    <div class="heatmap-stat">
+                        <span>Leave:</span>
+                        <span class="heatmap-stat-value">3</span>
+                    </div>
+                    <div class="heatmap-stat">
+                        <span>Rescheduled:</span>
+                        <span class="heatmap-stat-value" style="color: var(--accent-amber)">1</span>
+                    </div>
+                </div>
+            </div>
+            <div class="heatmap-grid">
+                <!-- Week 1 -->
+                <div class="heatmap-day level-3" title="Mon 1: EP list"></div>
+                <div class="heatmap-day level-2" title="Tue 2: Clinic"></div>
+                <div class="heatmap-day level-4" title="Wed 3: EP list + clinic"></div>
+                <div class="heatmap-day level-1" title="Thu 4: Admin/SPA"></div>
+                <div class="heatmap-day level-3" title="Fri 5: 2 clinics"></div>
+                <div class="heatmap-day weekend"></div>
+                <div class="heatmap-day weekend"></div>
+                <!-- Week 2 -->
+                <div class="heatmap-day level-4" title="Mon 8: EP list"></div>
+                <div class="heatmap-day level-3" title="Tue 9: Clinic"></div>
+                <div class="heatmap-day level-3" title="Wed 10: EP list"></div>
+                <div class="heatmap-day level-2" title="Thu 11: Clinic"></div>
+                <div class="heatmap-day level-4" title="Fri 12: EP list"></div>
+                <div class="heatmap-day weekend"></div>
+                <div class="heatmap-day weekend"></div>
+                <!-- Week 3 -->
+                <div class="heatmap-day level-3" title="Mon 15: Clinic"></div>
+                <div class="heatmap-day cancelled" title="Tue 16: Clinic rescheduled → Jan 6"></div>
+                <div class="heatmap-day level-3" title="Wed 17: EP list"></div>
+                <div class="heatmap-day level-4" title="Thu 18: 75th ablation!"></div>
+                <div class="heatmap-day level-2" title="Fri 19: Clinic"></div>
+                <div class="heatmap-day weekend"></div>
+                <div class="heatmap-day weekend"></div>
+                <!-- Week 4 -->
+                <div class="heatmap-day level-2" title="Mon 22: Clinic"></div>
+                <div class="heatmap-day level-3" title="Tue 23: EP list"></div>
+                <div class="heatmap-day leave" title="Wed 24: Annual Leave"></div>
+                <div class="heatmap-day leave" title="Thu 25: Bank Holiday"></div>
+                <div class="heatmap-day leave" title="Fri 26: Bank Holiday"></div>
+                <div class="heatmap-day weekend"></div>
+                <div class="heatmap-day weekend"></div>
+                <!-- Week 5 -->
+                <div class="heatmap-day level-1" title="Mon 29: Admin"></div>
+                <div class="heatmap-day level-3" title="Tue 30: Clinic"></div>
+                <div class="heatmap-day level-1" title="Wed 31: Half day"></div>
+            </div>
+            <div class="heatmap-legend">
+                <span>Less</span>
+                <div class="heatmap-legend-item" style="background: var(--bg-secondary)"></div>
+                <div class="heatmap-legend-item" style="background: rgba(16, 185, 129, 0.2)"></div>
+                <div class="heatmap-legend-item" style="background: rgba(16, 185, 129, 0.4)"></div>
+                <div class="heatmap-legend-item" style="background: rgba(16, 185, 129, 0.6)"></div>
+                <div class="heatmap-legend-item" style="background: var(--accent-green)"></div>
+                <span>More</span>
+                <span style="margin-left: 1rem;">|</span>
+                <div class="heatmap-legend-item" style="background: rgba(100, 116, 139, 0.3); margin-left: 0.5rem;"></div>
+                <span>Leave</span>
+                <div class="heatmap-legend-item" style="background: rgba(245, 158, 11, 0.4); margin-left: 0.5rem;"></div>
+                <span>Rescheduled</span>
+            </div>
+        </section>
+
+        <!-- Insights Section -->
+        <section class="insights-section animate-in delay-4">
+            <h3 class="insights-title">🎯 Insights & Suggestions</h3>
+            <div class="insight-grid">
+                <div class="insight-item warning">
+                    <div class="insight-icon">📉</div>
+                    <p class="insight-text">
+                        <span class="insight-highlight">3 clinics behind YTD</span> — 
+                        This stems from 3 cancelled clinics that weren't recovered. 
+                        At current pace, you'll finish the year at <span class="insight-highlight">95%</span> delivery.
+                    </p>
+                    <div class="insight-cta">💡 1 extra clinic per month in Q4 closes the gap</div>
+                </div>
+                <div class="insight-item warning">
+                    <div class="insight-icon">🔋</div>
+                    <p class="insight-text">
+                        <span class="insight-highlight">1 more ICD needed</span> for BHRS minimum. 
+                        You're at 29 of 30 complex devices. Next scheduled device list: <span class="insight-highlight">Jan 8</span>.
+                    </p>
+                    <div class="insight-cta">On track to meet minimum by month end</div>
+                </div>
+                <div class="insight-item positive">
+                    <div class="insight-icon">🏆</div>
+                    <p class="insight-text">
+                        <span class="insight-highlight">75 ablations YTD</span> — 
+                        You're in the <span class="insight-highlight">top quartile</span> nationally for EP ablation volume. 
+                        10% above subspecialty average.
+                    </p>
+                </div>
+                <div class="insight-item info">
+                    <div class="insight-icon">📊</div>
+                    <p class="insight-text">
+                        DNA rate <span class="insight-highlight">improved from 9.2% to 8.1%</span> over last 3 months. 
+                        Still above 7% target, but trending in right direction.
+                    </p>
+                    <div class="insight-cta">Consider text reminder timing review</div>
+                </div>
+                <div class="insight-item action">
+                    <div class="insight-icon">📅</div>
+                    <p class="insight-text">
+                        <span class="insight-highlight">8 days annual leave remaining</span> for FY25/26. 
+                        Remember to book before March to avoid losing entitlement.
+                    </p>
+                </div>
+                <div class="insight-item positive">
+                    <div class="insight-icon">✅</div>
+                    <p class="insight-text">
+                        <span class="insight-highlight">Governance attendance 85%</span> — 
+                        Above the 80% threshold. Strong engagement with M&M and audit meetings.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="report-footer">
+            <div>Demo Report | Illustrative data only | Concept design for NHS consultant performance reporting</div>
+            <div class="footer-actions">
+                <button class="footer-btn">📥 Export PDF</button>
+                <button class="footer-btn">📧 Share</button>
+                <button class="footer-btn">💬 Feedback</button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Activity Chart with some months behind target
+        const ctx = document.getElementById('activityChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [
+                    {
+                        label: 'Planned',
+                        data: [6, 7, 6, 7, 6, 6, 6, 7, 6],
+                        backgroundColor: 'rgba(59, 130, 246, 0.3)',
+                        borderColor: 'rgba(59, 130, 246, 0.5)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    },
+                    {
+                        label: 'Delivered',
+                        data: [6, 6, 6, 7, 5, 6, 8, 6, 5],
+                        backgroundColor: function(context) {
+                            const planned = [6, 7, 6, 7, 6, 6, 6, 7, 6][context.dataIndex];
+                            const value = context.raw;
+                            return value >= planned ? 'rgba(16, 185, 129, 0.8)' : 'rgba(245, 158, 11, 0.8)';
+                        },
+                        borderColor: function(context) {
+                            const planned = [6, 7, 6, 7, 6, 6, 6, 7, 6][context.dataIndex];
+                            const value = context.raw;
+                            return value >= planned ? '#10b981' : '#f59e0b';
+                        },
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#1a2234',
+                        titleColor: '#f8fafc',
+                        bodyColor: '#94a3b8',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: true,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.raw + ' clinics';
+                            },
+                            afterBody: function(tooltipItems) {
+                                const planned = tooltipItems[0]?.raw;
+                                const delivered = tooltipItems[1]?.raw;
+                                if (delivered !== undefined && planned !== undefined) {
+                                    const diff = delivered - planned;
+                                    if (diff < 0) {
+                                        return ['', '⚠️ ' + Math.abs(diff) + ' below target'];
+                                    } else if (diff > 0) {
+                                        return ['', '✓ ' + diff + ' above target'];
+                                    } else {
+                                        return ['', '✓ On target'];
+                                    }
+                                }
+                                return [];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#64748b',
+                            font: {
+                                family: "'DM Sans', sans-serif"
+                            }
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        max: 10,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#64748b',
+                            font: {
+                                family: "'DM Sans', sans-serif"
+                            },
+                            stepSize: 2
+                        }
+                    }
+                }
+            }
+        });
+
+        // Animate progress rings on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const rings = document.querySelectorAll('.ring-progress');
+            rings.forEach(ring => {
+                const offset = ring.getAttribute('stroke-dashoffset');
+                ring.style.strokeDashoffset = '327';
+                setTimeout(() => {
+                    ring.style.strokeDashoffset = offset;
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>
